@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pi Calculator</h1>
+    <label for="precision">Enter the number of digits of Pi to calculate:</label>
+    <input type="number" id="precision" value="1000" min="1">
+    <button onclick="calculatePi()">Calculate Pi</button>
+    
+    <div id="result"></div>
+    
+    <h2>Display the nth digit of Pi</h2>
+    <label for="digitPosition">Enter the position of the digit:</label>
+    <input type="number" id="digitPosition" value="1" min="1">
+    <button onclick="displayNthDigit()">Display Digit</button>
+    
+    <div id="nthDigit"></div>
+
+    <h2>Storage Reducer</h2>
+    <button onclick="reduceStorage()">Reduce Storage</button>
+    <div id="storageResult"></div>
+
+    <script>
+        let compressedPiDigits = [];
+        let calculationStartTime;
+
+        function calculatePi() {
+            const precision = document.getElementById('precision').value;
+            calculationStartTime = performance.now();
+            const piDigits = calculatePiDigits(precision);
+            compressedPiDigits = compressPiDigits(piDigits);
+            const timeTaken = performance.now() - calculationStartTime;
+            document.getElementById('result').innerHTML = `
+                <p>Pi to ${precision} digits has been calculated and compressed.</p>
+                <p>Time taken: ${timeTaken.toFixed(2)} milliseconds</p>
+            `;
+        }
+
+        function calculatePiDigits(n) {
+            let q = 1n, r = 180n, t = 60n, i = 2n, pi = '', c = 0;
+            while (c < n) {
+                let u = (q * (27n * i - 12n) + 5n * r) / (5n * t);
+                pi += u.toString();
+                r = 10n * (q * (5n * i - 2n) + r - u * t);
+                q *= 10n * i * (2n * i - 1n);
+                t *= 2n * (2n * i - 1n);
+                i++;
+                c++;
+            }
+            return pi.slice(0, 1) + '.' + pi.slice(1);
+        }
+
+        function compressPiDigits(digits) {
+            // Simple compression using Run-Length Encoding (RLE)
+            const compressed = [];
+            let count = 1;
+            for (let i = 1; i < digits.length; i++) {
+                if (digits[i] === digits[i - 1]) {
+                    count++;
+                } else {
+                    compressed.push([digits[i - 1], count]);
+                    count = 1;
+                }
+            }
+            compressed.push([digits[digits.length - 1], count]);
+            return compressed;
+        }
+
+        function decompressPiDigits() {
+            // Decompressing RLE compressed digits
+            let piDigits = '';
+            for (const [digit, count] of compressedPiDigits) {
+                piDigits += digit.repeat(count);
+            }
+            return piDigits;
+        }
+
+        function displayNthDigit() {
+            const position = document.getElementById('digitPosition').value;
+            const piDigits = decompressPiDigits();
+            const digit = piDigits[position] || 'N/A';
+            document.getElementById('nthDigit').innerHTML = `<p>The digit at position ${position} is: ${digit}</p>`;
+        }
+
+        function reduceStorage() {
+            compressedPiDigits = []; // Clear the stored compressed digits to reduce memory usage
+            document.getElementById('storageResult').innerHTML = '<p>Storage has been reduced by clearing compressed digits of Pi.</p>';
+        }
+    </script>
+</body>
+</html>
