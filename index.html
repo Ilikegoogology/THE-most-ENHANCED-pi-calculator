@@ -42,9 +42,11 @@
             calculationStartTime = performance.now();
             const piDigits = calculatePiDigits(precision);
             compressedPiDigits = compressPiDigits(piDigits);
+            const truncatedPi = truncatePiDigits(piDigits, 10, 10);
             const timeTaken = performance.now() - calculationStartTime;
             document.getElementById('result').innerHTML = `
-                <p>Pi to ${precision} digits has been calculated and compressed.</p>
+                <p>Pi to ${precision} digits:</p>
+                <textarea rows="5" cols="50" readonly>${truncatedPi}</textarea>
                 <p>Time taken: ${timeTaken.toFixed(2)} milliseconds</p>
             `;
         }
@@ -86,6 +88,16 @@
                 piDigits += digit.repeat(count);
             }
             return piDigits;
+        }
+
+        function truncatePiDigits(digits, startCount, endCount) {
+            // Show the first `startCount` digits and last `endCount` digits with "..." in between
+            if (digits.length <= startCount + endCount) {
+                return digits;
+            }
+            const start = digits.slice(0, startCount + 2); // Including "3."
+            const end = digits.slice(-endCount);
+            return `${start}...${end}`;
         }
 
         function displayNthDigit() {
